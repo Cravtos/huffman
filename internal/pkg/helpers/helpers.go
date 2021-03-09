@@ -5,8 +5,8 @@ import (
 )
 
 // CalcFreq reads everything from ByteReader and returns byte frequencies.
-func CalcFreq(br io.ByteReader) []int {
-	freq := make([]int, 256)
+func CalcFreq(br io.ByteReader) []uint {
+	freq := make([]uint, 256)
 
 	v, err := br.ReadByte()
 	for err == nil {

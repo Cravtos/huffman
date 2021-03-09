@@ -1,9 +1,11 @@
 package node
 
+import "github.com/cravtos/huffman/internal/pkg/code"
+
 // NewTree constructs encoding tree from byte frequencies.
-// Returns fictitious head node.
-func NewTree(freq []int) *Node {
-	var head Node
+// Returns root node.
+func NewTree(freq []uint) *Node {
+	var head Node // Fictitious head
 
 	for i, v := range freq {
 		if v == 0 {
@@ -24,7 +26,40 @@ func NewTree(freq []int) *Node {
 		head.insert(node)
 	}
 
-	return &head
+	return head.Next
+}
+
+// FillTable fills table with new encoding values.
+// E.g.:
+// table['a'] = {code: 0b10, len: 2}
+// table['b'] = {code: 0b110, len: 3}
+func (head *Node) FillTable(table map[byte]code.Code) {
+	var c code.Code
+	head.fillTable(table, c)
+}
+
+// fillTable recursively fills table with encoding values.
+func (head *Node) fillTable(table map[byte]code.Code, c code.Code) {
+	if head.Left == nil && head.Right == nil {
+		table[head.Value] = c
+		return
+	}
+
+	if head.Left != nil {
+		lc := code.Code{
+			Code: c.Code << 1,
+			Len:  c.Len + 1,
+		}
+		head.Left.fillTable(table, lc)
+	}
+
+	if head.Right != nil {
+		rc := code.Code{
+			Code: (c.Code << 1) | 1,
+			Len:  c.Len + 1,
+		}
+		head.Right.fillTable(table, rc)
+	}
 }
 
 // insert puts a node in a list so that the list remains sorted.
