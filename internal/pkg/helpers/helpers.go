@@ -1,16 +1,17 @@
 package helpers
 
 import (
-	"bufio"
+	"io"
 )
 
-func CalcFreq(r *bufio.Reader) []int {
+// CalcFreq reads everything from ByteReader and returns byte frequencies.
+func CalcFreq(br io.ByteReader) []int {
 	freq := make([]int, 256)
 
-	v, err := r.ReadByte()
+	v, err := br.ReadByte()
 	for err == nil {
-		freq[v] += 1
-		v, err = r.ReadByte()
+		freq[v]++
+		v, err = br.ReadByte()
 	}
 
 	return freq

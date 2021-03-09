@@ -29,9 +29,17 @@ func main() {
 
 	head := node.NewTree(freq)
 
+	// Pop and print everything
+	n := head.Pop()
+	for n != nil {
+		fmt.Printf("(v: %d, w: %d)\n", n.Value, n.Weight)
+		n = head.Pop()
+	}
+
+	// Check if something remains
 	cur := head.Next
 	for cur != nil {
-		fmt.Printf("(v: %d, w: %d)\n", cur.Value, cur.Weight)
+		fmt.Fprintf(os.Stderr, "tree should be empty at this point: got (v: %d, w: %d)\n", cur.Value, cur.Weight)
 		cur = cur.Next
 	}
 }
