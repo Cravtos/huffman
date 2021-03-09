@@ -7,6 +7,7 @@ import (
 	"path/filepath"
 
 	"github.com/cravtos/huffman/internal/pkg/helpers"
+	"github.com/cravtos/huffman/internal/pkg/node"
 )
 
 func main() {
@@ -26,9 +27,11 @@ func main() {
 	r := bufio.NewReader(file)
 	freq := helpers.CalcFreq(r)
 
-	for i, v := range freq {
-		if v != 0 {
-			fmt.Printf("byte %d has freq %d\n", i, v)
-		}
+	head := node.NewTree(freq)
+
+	cur := head.Next
+	for cur != nil {
+		fmt.Printf("(v: %d, w: %d)\n", cur.Value, cur.Weight)
+		cur = cur.Next
 	}
 }
