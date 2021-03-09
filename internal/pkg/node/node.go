@@ -3,19 +3,34 @@ package node
 func NewTree(freq []int) *Node {
 	var head Node
 
-	prev := &head
 	for i, v := range freq {
 		if v == 0 {
 			continue
 		}
-		cur := &Node{
+		node := &Node{
 			Value:  byte(i),
 			Weight: v,
-			Prev:   prev,
 		}
-		prev.Next = cur
-		prev = cur
+		head.insert(node)
 	}
 
 	return &head
 }
+
+// insert puts a node in a list so that the list remains sorted
+func (head *Node) insert(node *Node) {
+	after := head
+	for after.Next != nil && node.Weight >= after.Next.Weight {
+		after = after.Next
+	}
+
+	node.Prev = after
+	node.Next = after.Next
+	if after.Next != nil {
+		after.Next.Prev = node
+	}
+	after.Next = node
+}
+
+// Todo: function to join two nodes (Node.join). should return one node with left right != nil.
+// Todo: function that makes a tree from sorted list (NewTree).
