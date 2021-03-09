@@ -29,17 +29,16 @@ func main() {
 
 	head := node.NewTree(freq)
 
-	// Pop and print everything
-	n := head.Pop()
-	for n != nil {
-		fmt.Printf("(v: %d, w: %d)\n", n.Value, n.Weight)
-		n = head.Pop()
+	// Little test
+	var freqSum int
+	for _, v := range freq {
+		freqSum += v
 	}
 
-	// Check if something remains
-	cur := head.Next
-	for cur != nil {
-		fmt.Fprintf(os.Stderr, "tree should be empty at this point: got (v: %d, w: %d)\n", cur.Value, cur.Weight)
-		cur = cur.Next
+	root := head.Next
+	if root.Weight != freqSum {
+		fmt.Fprintf(os.Stderr, "root weight is incorrect!\nexp: %d\ngot: %d\n", root.Weight, freqSum)
+		return
 	}
+	fmt.Printf("all ok :)\n")
 }

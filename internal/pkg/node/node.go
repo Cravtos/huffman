@@ -1,7 +1,7 @@
 package node
 
 // NewTree constructs encoding tree from byte frequencies.
-// Returns fictitious tree head.
+// Returns fictitious head node.
 func NewTree(freq []int) *Node {
 	var head Node
 
@@ -16,11 +16,13 @@ func NewTree(freq []int) *Node {
 		head.insert(node)
 	}
 
-	// for head.Next != nil {
-	// 	l := head.pop()
-	// 	r := head.pop()
-	//
-	// }
+	for head.Next != nil && head.Next.Next != nil {
+		l := head.pop()
+		r := head.pop()
+
+		node := head.join(l, r)
+		head.insert(node)
+	}
 
 	return &head
 }
@@ -40,9 +42,9 @@ func (head *Node) insert(node *Node) {
 	after.Next = node
 }
 
-// Pop removes first node after head and returns it.
+// pop removes first node after head and returns it.
 // If head is the only node, nil is returned.
-func (head *Node) Pop() *Node {
+func (head *Node) pop() *Node {
 	node := head.Next
 
 	if node != nil {
@@ -59,5 +61,19 @@ func (head *Node) Pop() *Node {
 	return node
 }
 
-// Todo: function to join two nodes (Node.join). should return one node with left right != nil.
-// Todo: function that makes a tree from sorted list (NewTree).
+// join returns node with left and right leaves set to l and r.
+// Returned node weight is sum of l and r weights.
+func (head *Node) join(l, r *Node) *Node {
+	var node Node
+	if l != nil {
+		node.Weight += l.Weight
+		node.Left = l
+	}
+
+	if r != nil {
+		node.Weight += r.Weight
+		node.Right = r
+	}
+
+	return &node
+}
