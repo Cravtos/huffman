@@ -7,9 +7,8 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/cravtos/huffman/internal/pkg/code"
 	"github.com/cravtos/huffman/internal/pkg/helpers"
-	"github.com/cravtos/huffman/internal/pkg/node"
+	"github.com/cravtos/huffman/internal/pkg/tree"
 )
 
 func main() {
@@ -42,12 +41,12 @@ func main() {
 	freq := helpers.CalcFreq(r)
 
 	// Construct encoding tree
-	root := node.NewTree(freq)
+	root := tree.NewEncodingTree(freq)
 
 	// Make encoding table
-	table := make(map[byte]code.Code)
-	root.FillTable(table)
+	table := root.NewEncodingTable()
 
+	// Write encoding table to file (as test)
 	w := bitio.NewWriter(outFile)
 	for _, c := range table {
 		fmt.Printf("writing code %b | len: %d\n", c.Code, c.Len)
