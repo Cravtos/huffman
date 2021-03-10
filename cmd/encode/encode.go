@@ -3,6 +3,7 @@ package main
 import (
 	"bufio"
 	"fmt"
+	"github.com/cravtos/huffman/internal/pkg/bitio"
 	"os"
 	"path/filepath"
 
@@ -18,17 +19,26 @@ func main() {
 		return
 	}
 
-	// Open file
-	filePath := filepath.Clean(os.Args[1])
-	file, err := os.Open(filePath)
+	// Open file to read data
+	inFilePath := filepath.Clean(os.Args[1])
+	inFile, err := os.Open(inFilePath)
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "can't open file %s", filePath)
+		fmt.Fprintf(os.Stderr, "can't open file %s", inFilePath)
 		return
 	}
-	defer file.Close()
+	defer inFile.Close()
+
+	// Open file to write compressed data
+	outFilePath := inFilePath + ".huff"
+	outFile, err := os.Create(outFilePath)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "can't create file %s", outFilePath)
+		return
+	}
+	defer outFile.Close()
 
 	// Calculate byte frequencies
-	r := bufio.NewReader(file)
+	r := bufio.NewReader(inFile)
 	freq := helpers.CalcFreq(r)
 
 	// Construct encoding tree
@@ -38,7 +48,16 @@ func main() {
 	table := make(map[byte]code.Code)
 	root.FillTable(table)
 
-	for i, v := range table {
-		fmt.Printf("byte %d:\t%b (len %d)\n", i, v.Code, v.Len)
+	w := bitio.NewWriter(outFile)
+	for _, c := range table {
+		fmt.Printf("writing code %b | len: %d\n", c.Code, c.Len)
+
+		err = w.WriteBits(c.Code, c.Len)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "got error while writing: %v", err)
+		}
+	}
+	if err := w.Flush(); err != nil {
+		fmt.Fprintf(os.Stderr, "got error while flushing: %v", err)
 	}
 }
