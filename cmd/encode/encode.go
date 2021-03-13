@@ -48,10 +48,13 @@ func main() {
 	log.Println("constructing encoding tree")
 	root := tree.NewEncodingTree(freq)
 
-	// Write encoding table to file (as test)
+	// Write header information:
+	// 4 bytes - number of encoded symbols
+	// 1 byte - number of leaf in encoding tree
+	// else - encoding tree in post order traversal
 	log.Println("writing header")
 	w := bitio.NewWriter(outFile)
-	if err = root.WriteHeader(w); err != nil {
+	if err = root.WriteHeader(w, freq); err != nil {
 		fmt.Fprintf(os.Stderr, "got error while writing header: %v", err)
 		return
 	}
@@ -66,7 +69,7 @@ func main() {
 	}
 
 	// Encode file
-	log.Println("encoding file file", inFilePath, "to file", outFilePath)
+	log.Println("encoding file", inFilePath, "to file", outFilePath)
 	v, err := r.ReadByte()
 	for err == nil {
 		if err = w.WriteBits(table[v].Code, table[v].Len); err != nil {

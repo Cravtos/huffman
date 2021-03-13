@@ -15,15 +15,12 @@ type Node struct {
 
 // NewEncodingTree constructs encoding tree from byte frequencies.
 // Returns root node.
-func NewEncodingTree(freq []uint) *Node {
+func NewEncodingTree(freq map[uint8]uint) *Node {
 	var head Node // Fictitious head
 
 	for i, v := range freq {
-		if v == 0 {
-			continue
-		}
 		node := &Node{
-			value:  byte(i),
+			value:  i,
 			weight: v,
 		}
 		head.insert(node)
@@ -85,9 +82,24 @@ func (head *Node) fillTable(table code.Table, c code.Code) {
 // For the string "streets are stone stars are not",
 // the header information is "1t1a1r001n1o01 01e1s0000", followed by the encoded text.
 // (https://engineering.purdue.edu/ece264/17au/hw/HW13/resources//streetstar.jpg)
-func (head *Node) WriteHeader(w *bitio.Writer) (err error) {
-	err = head.writeHeader(w)
-	if err != nil {
+func (head *Node) WriteHeader(w *bitio.Writer, freq map[uint8]uint) (err error) {
+	var nTree uint64
+	for _, v := range freq {
+		nTree += uint64(v)
+	}
+
+	// Write total number of encoded symbols
+	if err = w.WriteBits(nTree, 32); err != nil {
+		return err
+	}
+
+	// Write total number of symbols in graph
+	if err = w.WriteBits(uint64(len(freq)), 8); err != nil {
+		return err
+	}
+
+	// Write encoding tree information
+	if err = head.writeHeader(w); err != nil {
 		return err
 	}
 	return w.WriteBits(0, 1)
@@ -102,13 +114,13 @@ func (head *Node) writeHeader(w *bitio.Writer) (err error) {
 	}
 
 	if head.left != nil {
-		if err = head.left.WriteHeader(w); err != nil {
+		if err = head.left.writeHeader(w); err != nil {
 			return err
 		}
 	}
 
 	if head.right != nil {
-		if err = head.right.WriteHeader(w); err != nil {
+		if err = head.right.writeHeader(w); err != nil {
 			return err
 		}
 	}

@@ -1,2 +1,3 @@
 .idea/
-tests/data/*.huff
+!tests/data/compress_me.txt
+tests/data/*
