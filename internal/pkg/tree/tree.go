@@ -1,6 +1,7 @@
 package tree
 
 import (
+	"github.com/cravtos/huffman/internal/pkg/bitio"
 	"github.com/cravtos/huffman/internal/pkg/code"
 )
 
@@ -83,9 +84,37 @@ func (head *Node) fillTable(table code.Table, c code.Code) {
 //
 // For the string "streets are stone stars are not",
 // the header information is "1t1a1r001n1o01 01e1s0000", followed by the encoded text.
-//func (head *Node) WriteHeader(w *bitio.Writer) error {
-//	
-//}
+// (https://engineering.purdue.edu/ece264/17au/hw/HW13/resources//streetstar.jpg)
+func (head *Node) WriteHeader(w *bitio.Writer) (err error) {
+	err = head.writeHeader(w)
+	if err != nil {
+		return err
+	}
+	return w.WriteBits(0, 1)
+}
+
+func (head *Node) writeHeader(w *bitio.Writer) (err error) {
+	if head.left == nil && head.right == nil {
+		if err = w.WriteBits(1, 1); err != nil {
+			return err
+		}
+		return w.WriteByte(head.value)
+	}
+
+	if head.left != nil {
+		if err = head.left.WriteHeader(w); err != nil {
+			return err
+		}
+	}
+
+	if head.right != nil {
+		if err = head.right.WriteHeader(w); err != nil {
+			return err
+		}
+	}
+
+	return w.WriteBits(0, 1)
+}
 
 // insert puts a node in a list so that the list remains sorted.
 func (head *Node) insert(node *Node) {

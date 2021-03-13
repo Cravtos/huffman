@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"fmt"
 	"github.com/cravtos/huffman/internal/pkg/bitio"
+	"log"
 	"os"
 	"path/filepath"
 
@@ -20,6 +21,7 @@ func main() {
 
 	// Open file to read data
 	inFilePath := filepath.Clean(os.Args[1])
+	log.Println("opening file", inFilePath)
 	inFile, err := os.Open(inFilePath)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "can't open file %s", inFilePath)
@@ -29,6 +31,7 @@ func main() {
 
 	// Open file to write compressed data
 	outFilePath := inFilePath + ".huff"
+	log.Println("creating file", outFilePath)
 	outFile, err := os.Create(outFilePath)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "can't create file %s", outFilePath)
@@ -37,26 +40,47 @@ func main() {
 	defer outFile.Close()
 
 	// Calculate byte frequencies
+	log.Println("calculating frequencies")
 	r := bufio.NewReader(inFile)
 	freq := helpers.CalcFreq(r)
 
 	// Construct encoding tree
+	log.Println("constructing encoding tree")
 	root := tree.NewEncodingTree(freq)
 
+	// Write encoding table to file (as test)
+	log.Println("writing header")
+	w := bitio.NewWriter(outFile)
+	if err = root.WriteHeader(w); err != nil {
+		fmt.Fprintf(os.Stderr, "got error while writing header: %v", err)
+		return
+	}
+
 	// Make encoding table
+	log.Println("making encoding table")
 	table := root.NewEncodingTable()
 
-	// Write encoding table to file (as test)
-	w := bitio.NewWriter(outFile)
-	for _, c := range table {
-		fmt.Printf("writing code %b | len: %d\n", c.Code, c.Len)
-
-		err = w.WriteBits(c.Code, c.Len)
-		if err != nil {
-			fmt.Fprintf(os.Stderr, "got error while writing: %v", err)
-		}
+	// Start reading from begin
+	if _, err = inFile.Seek(0, 0); err != nil {
+		fmt.Fprintf(os.Stderr, "got error while seeking to begining of file: %v", err)
 	}
+
+	// Encode file
+	log.Println("encoding file file", inFilePath, "to file", outFilePath)
+	v, err := r.ReadByte()
+	for err == nil {
+		if err = w.WriteBits(table[v].Code, table[v].Len); err != nil {
+			fmt.Fprintf(os.Stderr, "got error while writing data: %v", err)
+			return
+		}
+		v, err = r.ReadByte()
+	}
+
+	// Flush everything to file
 	if err := w.Flush(); err != nil {
 		fmt.Fprintf(os.Stderr, "got error while flushing: %v", err)
+		return
 	}
+
+	log.Println("finished. see", outFilePath)
 }
