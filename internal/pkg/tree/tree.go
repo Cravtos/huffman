@@ -74,6 +74,10 @@ func (head *Node) fillTable(table code.Table, c code.Code) {
 
 // WriteHeader writes header which can be used to construct encoding tree.
 //
+// Header: uint32(number of encodedsymbols in file)
+//		   uint8(number of symbols in tree)
+//		   tree in raw bits
+//
 // To store the tree, we use a post-order traversal, writing each node visited.
 // When you encounter a leaf node, you write a 1 followed by the byte value of the leaf node.
 // When you encounter a non-leaf node, you write a 0.
@@ -83,13 +87,13 @@ func (head *Node) fillTable(table code.Table, c code.Code) {
 // the header information is "1t1a1r001n1o01 01e1s0000", followed by the encoded text.
 // (https://engineering.purdue.edu/ece264/17au/hw/HW13/resources//streetstar.jpg)
 func (head *Node) WriteHeader(w *bitio.Writer, freq map[uint8]uint) (err error) {
-	var nTree uint64
+	var nEncoded uint64
 	for _, v := range freq {
-		nTree += uint64(v)
+		nEncoded += uint64(v)
 	}
 
 	// Write total number of encoded symbols
-	if err = w.WriteBits(nTree, 32); err != nil {
+	if err = w.WriteBits(nEncoded, 32); err != nil {
 		return err
 	}
 
@@ -127,6 +131,16 @@ func (head *Node) writeHeader(w *bitio.Writer) (err error) {
 
 	return w.WriteBits(0, 1)
 }
+
+// DecodeHeader reads from bitio.Reader total number of encoded symbols,
+// number of leaf in tree, the tree itself.
+// Returns constructed tree and number of encoded symbols.
+//func (head *Node) DecodeHeader(r *bitio.Reader) (nEncoded uint32, root *Node, err error) {
+//	nEncoded, err = r.ReadBits(32)
+//
+//
+//	return
+//}
 
 // insert puts a node in a list so that the list remains sorted.
 func (head *Node) insert(node *Node) {
