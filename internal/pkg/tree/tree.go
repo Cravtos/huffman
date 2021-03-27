@@ -1,6 +1,7 @@
 package tree
 
 import (
+	"errors"
 	"github.com/cravtos/huffman/internal/pkg/bitio"
 	"github.com/cravtos/huffman/internal/pkg/code"
 )
@@ -27,8 +28,8 @@ func NewEncodingTree(freq map[uint8]uint) *Node {
 	}
 
 	for head.next != nil && head.next.next != nil {
-		l := head.pop()
-		r := head.pop()
+		l := head.popFirst()
+		r := head.popFirst()
 
 		node := head.join(l, r)
 		head.insert(node)
@@ -87,13 +88,13 @@ func (head *Node) fillTable(table code.Table, c code.Code) {
 // the header information is "1t1a1r001n1o01 01e1s0000", followed by the encoded text.
 // (https://engineering.purdue.edu/ece264/17au/hw/HW13/resources//streetstar.jpg)
 func (head *Node) WriteHeader(w *bitio.Writer, freq map[uint8]uint) (err error) {
-	var nEncoded uint64
+	var nEncoded uint32
 	for _, v := range freq {
-		nEncoded += uint64(v)
+		nEncoded += uint32(v)
 	}
 
 	// Write total number of encoded symbols
-	if err = w.WriteBits(nEncoded, 32); err != nil {
+	if err = w.WriteBits(uint64(nEncoded), 32); err != nil {
 		return err
 	}
 
@@ -135,14 +136,71 @@ func (head *Node) writeHeader(w *bitio.Writer) (err error) {
 // DecodeHeader reads from bitio.Reader total number of encoded symbols,
 // number of leaf in tree, the tree itself.
 // Returns constructed tree and number of encoded symbols.
-//func (head *Node) DecodeHeader(r *bitio.Reader) (nEncoded uint32, root *Node, err error) {
-//	nEncoded, err = r.ReadBits(32)
-//
-//
-//	return
-//}
+func DecodeHeader(r *bitio.Reader) (nEncoded uint32, root *Node, err error) {
+	var buf uint64
+	buf, err = r.ReadBits(32)
+	nEncoded = uint32(buf)
+	if err != nil {
+		return 0, nil, err
+	}
 
-// insert puts a node in a list so that the list remains sorted.
+	buf, err = r.ReadBits(8)
+	nTree := byte(buf)
+	if err != nil {
+		return 0, nil, err
+	}
+
+	root, err = decodeTree(r, nTree)
+	if err != nil {
+		return 0, nil, err
+	}
+
+	return nEncoded, root, nil
+}
+
+// decodeTree constructs tree from header information
+func decodeTree(r *bitio.Reader, nTree byte) (root *Node, err error) {
+	var head Node
+	var nodes byte
+	var leaves byte
+	var u uint64
+
+	for nodes < nTree {
+		u, err = r.ReadBits(1)
+		if err != nil {
+			return nil, err
+		}
+
+		if u == 1 {
+			leaves++
+			symbol, err := r.ReadBits(8)
+			if err != nil {
+				return nil, err
+			}
+			node := &Node{value: byte(symbol)}
+			head.pushBack(node)
+		}
+
+		if u == 0 {
+			nodes++
+			if nodes == nTree {
+				break
+			}
+			r := head.popLast()
+			l := head.popLast()
+			node := head.join(l, r)
+			head.pushBack(node)
+		}
+	}
+
+	if nodes != leaves {
+		err = errors.New("nodes != leaves")
+	}
+
+	return head.next, err
+}
+
+// insert puts a node to list so that the list remains sorted.
 func (head *Node) insert(node *Node) {
 	after := head
 	for after.next != nil && node.weight >= after.next.weight {
@@ -157,21 +215,51 @@ func (head *Node) insert(node *Node) {
 	after.next = node
 }
 
-// pop removes first node after head and returns it.
-// If head is the only node, nil is returned.
-func (head *Node) pop() *Node {
-	node := head.next
-
-	if node != nil {
-		head.next = nil
-		if node.next != nil {
-			node.next.prev = head
-			head.next = node.next
-		}
-
-		node.next = nil
-		node.prev = nil
+// pushBack puts a node to the end of a list.
+func (head *Node) pushBack(node *Node) {
+	after := head
+	for after.next != nil {
+		after = after.next
 	}
+
+	node.prev = after
+	node.next = nil
+	after.next = node
+}
+
+// popFirst removes first node after head and returns it.
+// If head is the only node, nil is returned.
+func (head *Node) popFirst() *Node {
+	node := head.next
+	if node == nil {
+		return nil
+	}
+
+	head.next = nil
+	if node.next != nil {
+		node.next.prev = head
+		head.next = node.next
+	}
+	node.next = nil
+	node.prev = nil
+
+	return node
+}
+
+// popLast removes first node after head and returns it.
+// If head is the only node, nil is returned.
+func (head *Node) popLast() *Node {
+	node := head.next
+	if node == nil {
+		return nil
+	}
+
+	for node.next != nil {
+		node = node.next
+	}
+
+	node.prev.next = nil
+	node.prev = nil
 
 	return node
 }

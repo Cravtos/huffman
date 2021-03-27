@@ -3,11 +3,11 @@ package main
 import (
 	"bufio"
 	"fmt"
-	"github.com/cravtos/huffman/internal/pkg/bitio"
 	"log"
 	"os"
 	"path/filepath"
 
+	"github.com/cravtos/huffman/internal/pkg/bitio"
 	"github.com/cravtos/huffman/internal/pkg/helpers"
 	"github.com/cravtos/huffman/internal/pkg/tree"
 )
