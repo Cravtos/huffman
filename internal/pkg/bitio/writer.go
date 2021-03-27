@@ -17,6 +17,7 @@ type Writer struct {
 	bits   uint8
 }
 
+// NewWriter construct bitio.Writer from io.Writer.
 func NewWriter(to io.Writer) *Writer {
 	w := &Writer{
 		to: bufio.NewWriter(to),
@@ -82,6 +83,7 @@ func (w *Writer) WriteBits(bv uint64, n uint8) error {
 	return w.to.WriteByte(b)
 }
 
+// WriteByte is alias for WriteBit(b, 8).
 func (w *Writer) WriteByte(b byte) error {
 	return w.WriteBits(uint64(b), 8)
 }

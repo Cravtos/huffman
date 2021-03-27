@@ -50,24 +50,27 @@ func main() {
 	log.Println("decoding file")
 	w := bitio.NewWriter(outFile)
 
-	//code, err := root.DecodeNext(r)
-	//for i := 0; i != nEncoded && err == nil; i++ {
-	//	if err = w.WriteByte(code); err != nil {
-	//		fmt.Fprintf(os.Stderr, "got error while writing data: %v", err)
-	//		return
-	//	}
-	//
-	//	code, err = root.DecodeNext(r)
-	//}
+
+	code, err := root.DecodeNext(r)
+	var i uint32
+	for i = 0; i != nEncoded && err == nil; i++ {
+		if err = w.WriteByte(code); err != nil {
+			fmt.Fprintf(os.Stderr, "got error while writing data: %v", err)
+			return
+		}
+
+		code, err = root.DecodeNext(r)
+	}
+
+	if i != nEncoded {
+		fmt.Fprintf(os.Stderr, "number of decoded symbols not equal to number of symbols from header: %d != %d\n", i, nEncoded)
+	}
 
 	// Flush everything to file
 	if err := w.Flush(); err != nil {
 		fmt.Fprintf(os.Stderr, "got error while flushing: %v\n", err)
 		return
 	}
-
-	_ = nEncoded
-	_ = root
 
 	log.Println("finished. see", outFilePath)
 }

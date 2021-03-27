@@ -11,6 +11,7 @@ type Reader struct {
 	bits   uint8
 }
 
+// NewReader constructs new bitio.Reader from io.Reader.
 func NewReader(from io.Reader) *Reader {
 	r := &Reader{
 		from: bufio.NewReader(from),

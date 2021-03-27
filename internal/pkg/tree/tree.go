@@ -31,7 +31,7 @@ func NewEncodingTree(freq map[uint8]uint) *Node {
 		l := head.popFirst()
 		r := head.popFirst()
 
-		node := head.join(l, r)
+		node := join(l, r)
 		head.insert(node)
 	}
 
@@ -188,7 +188,7 @@ func decodeTree(r *bitio.Reader, nTree byte) (root *Node, err error) {
 			}
 			r := head.popLast()
 			l := head.popLast()
-			node := head.join(l, r)
+			node := join(l, r)
 			head.pushBack(node)
 		}
 	}
@@ -266,7 +266,7 @@ func (head *Node) popLast() *Node {
 
 // join returns node with left and right leaves set to l and r.
 // Returned node weight is sum of l and r weights.
-func (head *Node) join(l, r *Node) *Node {
+func join(l, r *Node) *Node {
 	var node Node
 	if l != nil {
 		node.weight += l.weight
@@ -279,4 +279,26 @@ func (head *Node) join(l, r *Node) *Node {
 	}
 
 	return &node
+}
+
+// DecodeNext reads bits from Reader until reaching a leaf in encoding tree.
+// Returns code corresponding to leaf.
+func (head *Node) DecodeNext(r *bitio.Reader) (b byte, err error) {
+	var u uint64
+	node := head
+
+	for node.left != nil && node.right != nil { // or node.value == 0
+		u, err = r.ReadBits(1)
+		if err != nil {
+			return 0, err
+		}
+
+		if u == 0 {
+			node = node.left
+		} else {
+			node = node.right
+		}
+	}
+
+	return node.value, err
 }
