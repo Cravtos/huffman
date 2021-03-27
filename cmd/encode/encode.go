@@ -86,4 +86,22 @@ func main() {
 	}
 
 	log.Println("finished. see", outFilePath)
+
+	// Get size statistics
+	inStat, err := inFile.Stat()
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "couldn't obtain stat for input file: %v\n", err)
+		return
+	}
+
+	outStat, err := outFile.Stat()
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "couldn't obtain stat for output file: %v\n", err)
+		return
+	}
+
+	inSize := inStat.Size()
+	outSize := outStat.Size()
+	ratio := float32(inStat.Size()) / float32(outStat.Size())
+	log.Printf("input size: %v, output size: %v, ratio: %v\n", inSize, outSize, ratio)
 }

@@ -25,7 +25,7 @@ func (r *Reader) ReadBits(n uint8) (u uint64, err error) {
 	if n < r.bits {
 		shift := r.bits - n
 		u = uint64(r.buffer >> shift)
-		r.buffer = r.buffer & (1 << shift - 1)
+		r.buffer = r.buffer & (1<<shift - 1)
 		r.bits = shift
 		return u, nil
 	}
@@ -56,8 +56,8 @@ func (r *Reader) ReadBits(n uint8) (u uint64, err error) {
 				return 0, err
 			}
 			shift := 8 - n
-			u = (u << n) | uint64(r.buffer >> shift)
-			r.buffer = r.buffer & (1 << shift - 1)
+			u = (u << n) | uint64(r.buffer>>shift)
+			r.buffer = r.buffer & (1<<shift - 1)
 			r.bits = shift
 		}
 

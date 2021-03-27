@@ -50,7 +50,7 @@ func main() {
 	log.Println("decoding file")
 	w := bitio.NewWriter(outFile)
 
-
+	// Decoding code by code
 	code, err := root.DecodeNext(r)
 	var i uint32
 	for i = 0; i != nEncoded && err == nil; i++ {
@@ -62,6 +62,7 @@ func main() {
 		code, err = root.DecodeNext(r)
 	}
 
+	// Check if number of decoded symbols equal number of symbols in header
 	if i != nEncoded {
 		fmt.Fprintf(os.Stderr, "number of decoded symbols not equal to number of symbols from header: %d != %d\n", i, nEncoded)
 	}
@@ -73,4 +74,22 @@ func main() {
 	}
 
 	log.Println("finished. see", outFilePath)
+
+	// Get size statistics
+	inStat, err := inFile.Stat()
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "couldn't obtain stat for input file: %v\n", err)
+		return
+	}
+
+	outStat, err := outFile.Stat()
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "couldn't obtain stat for output file: %v\n", err)
+		return
+	}
+
+	inSize := inStat.Size()
+	outSize := outStat.Size()
+	ratio := float32(outStat.Size()) / float32(inStat.Size())
+	log.Printf("input size: %v, output size: %v, ratio: %v\n", inSize, outSize, ratio)
 }
