@@ -15,7 +15,7 @@ import (
 func main() {
 	// Check if file is specified as argument
 	if len(os.Args) != 2 {
-		fmt.Fprintf(os.Stderr, "usage: %s [file]", filepath.Base(os.Args[0]))
+		fmt.Fprintf(os.Stderr, "usage: %s [file]\n", filepath.Base(os.Args[0]))
 		return
 	}
 
@@ -24,7 +24,7 @@ func main() {
 	log.Println("opening file", inFilePath)
 	inFile, err := os.Open(inFilePath)
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "can't open file %s", inFilePath)
+		fmt.Fprintf(os.Stderr, "can't open file %s\n", inFilePath)
 		return
 	}
 	defer inFile.Close()
@@ -34,7 +34,7 @@ func main() {
 	log.Println("creating file", outFilePath)
 	outFile, err := os.Create(outFilePath)
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "can't create file %s", outFilePath)
+		fmt.Fprintf(os.Stderr, "can't create file %s\n", outFilePath)
 		return
 	}
 	defer outFile.Close()
@@ -55,7 +55,7 @@ func main() {
 	log.Println("writing header")
 	w := bitio.NewWriter(outFile)
 	if err = root.WriteHeader(w, freq); err != nil {
-		fmt.Fprintf(os.Stderr, "got error while writing header: %v", err)
+		fmt.Fprintf(os.Stderr, "got error while writing header: %v\n", err)
 		return
 	}
 
@@ -65,7 +65,7 @@ func main() {
 
 	// Start reading from begin
 	if _, err = inFile.Seek(0, 0); err != nil {
-		fmt.Fprintf(os.Stderr, "got error while seeking to begining of file: %v", err)
+		fmt.Fprintf(os.Stderr, "got error while seeking to begining of file: %v\n", err)
 	}
 
 	// Encode file
@@ -73,7 +73,7 @@ func main() {
 	v, err := r.ReadByte()
 	for err == nil {
 		if err = w.WriteBits(table[v].Code, table[v].Len); err != nil {
-			fmt.Fprintf(os.Stderr, "got error while writing data: %v", err)
+			fmt.Fprintf(os.Stderr, "got error while writing data: %v\n", err)
 			return
 		}
 		v, err = r.ReadByte()
@@ -81,7 +81,7 @@ func main() {
 
 	// Flush everything to file
 	if err := w.Flush(); err != nil {
-		fmt.Fprintf(os.Stderr, "got error while flushing: %v", err)
+		fmt.Fprintf(os.Stderr, "got error while flushing: %v\n", err)
 		return
 	}
 

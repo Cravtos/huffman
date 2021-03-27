@@ -55,7 +55,7 @@ func main() {
 	var i uint32
 	for i = 0; i != nEncoded && err == nil; i++ {
 		if err = w.WriteByte(code); err != nil {
-			fmt.Fprintf(os.Stderr, "got error while writing data: %v", err)
+			fmt.Fprintf(os.Stderr, "got error while writing data: %v\n", err)
 			return
 		}
 
