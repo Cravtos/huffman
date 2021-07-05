@@ -20,7 +20,7 @@ func main() {
 
 	// Check if file is specified as argument
 	if *inPath == "" || *outPath == "" {
-		fmt.Fprintf(os.Stderr, "specify both input and output files path!")
+		fmt.Fprintln(os.Stderr, "specify both input and output files path!")
 		flag.Usage()
 		os.Exit(1)
 	}
