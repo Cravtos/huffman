@@ -1,39 +1,42 @@
 package main
 
 import (
+	"flag"
 	"fmt"
-	"log"
-	"os"
-	"path/filepath"
-
 	"github.com/cravtos/huffman/internal/pkg/bitio"
 	"github.com/cravtos/huffman/internal/pkg/tree"
+	"log"
+	"os"
 )
 
 func main() {
+	inPath := flag.String("input", "", "File to decode.")
+	outPath := flag.String("output", "", "Output file.")
+
+	flag.Parse()
+
 	// Check if file is specified as argument
-	if len(os.Args) != 2 {
-		fmt.Fprintf(os.Stderr, "usage: %s [file]\n", filepath.Base(os.Args[0]))
-		return
+	if *inPath == "" || *outPath == "" {
+		fmt.Fprintf(os.Stderr, "specify both input and output files path!")
+		flag.Usage()
+		os.Exit(1)
 	}
 
 	// Open file to read data
-	inFilePath := filepath.Clean(os.Args[1])
-	log.Println("opening file", inFilePath)
-	inFile, err := os.Open(inFilePath)
+	log.Println("opening file", *inPath)
+	inFile, err := os.Open(*inPath)
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "can't open file %s\n", inFilePath)
-		return
+		fmt.Fprintf(os.Stderr, "can't open file %s\n", *inPath)
+		os.Exit(1)
 	}
 	defer inFile.Close()
 
 	// Open file to write decompressed data
-	outFilePath := inFilePath + ".decoded"
-	log.Println("creating file", outFilePath)
-	outFile, err := os.Create(outFilePath)
+	log.Println("creating file", *outPath)
+	outFile, err := os.Create(*outPath)
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "can't create file %s\n", outFilePath)
-		return
+		fmt.Fprintf(os.Stderr, "can't create file %s\n", *outPath)
+		os.Exit(1)
 	}
 	defer outFile.Close()
 
@@ -43,7 +46,7 @@ func main() {
 	nEncoded, root, err := tree.DecodeHeader(r)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "can't decode header information: %v\n", err)
-		return
+		os.Exit(1)
 	}
 
 	// Decoding file
@@ -56,7 +59,7 @@ func main() {
 	for i = 0; i != nEncoded && err == nil; i++ {
 		if err = w.WriteByte(code); err != nil {
 			fmt.Fprintf(os.Stderr, "got error while writing data: %v\n", err)
-			return
+			os.Exit(1)
 		}
 
 		code, err = root.DecodeNext(r)
@@ -70,10 +73,10 @@ func main() {
 	// Flush everything to file
 	if err := w.Flush(); err != nil {
 		fmt.Fprintf(os.Stderr, "got error while flushing: %v\n", err)
-		return
+		os.Exit(1)
 	}
 
-	log.Println("finished. see", outFilePath)
+	log.Println("finished. see", *outPath)
 
 	// Get size statistics
 	inStat, err := inFile.Stat()

@@ -2,40 +2,43 @@ package main
 
 import (
 	"bufio"
+	"flag"
 	"fmt"
-	"log"
-	"os"
-	"path/filepath"
-
 	"github.com/cravtos/huffman/internal/pkg/bitio"
 	"github.com/cravtos/huffman/internal/pkg/helpers"
 	"github.com/cravtos/huffman/internal/pkg/tree"
+	"log"
+	"os"
 )
 
 func main() {
+	inPath := flag.String("input", "", "File to encode.")
+	outPath := flag.String("output", "", "Output file.")
+
+	flag.Parse()
+
 	// Check if file is specified as argument
-	if len(os.Args) != 2 {
-		fmt.Fprintf(os.Stderr, "usage: %s [file]\n", filepath.Base(os.Args[0]))
-		return
+	if *inPath == "" || *outPath == "" {
+		fmt.Fprintf(os.Stderr, "specify both input and output files path!")
+		flag.Usage()
+		os.Exit(1)
 	}
 
 	// Open file to read data
-	inFilePath := filepath.Clean(os.Args[1])
-	log.Println("opening file", inFilePath)
-	inFile, err := os.Open(inFilePath)
+	log.Println("opening file", *inPath)
+	inFile, err := os.Open(*inPath)
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "can't open file %s\n", inFilePath)
-		return
+		fmt.Fprintf(os.Stderr, "can't open file %s\n", *inPath)
+		os.Exit(1)
 	}
 	defer inFile.Close()
 
 	// Open file to write compressed data
-	outFilePath := inFilePath + ".huff"
-	log.Println("creating file", outFilePath)
-	outFile, err := os.Create(outFilePath)
+	log.Println("creating file", *outPath)
+	outFile, err := os.Create(*outPath)
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "can't create file %s\n", outFilePath)
-		return
+		fmt.Fprintf(os.Stderr, "can't create file %s\n", *outPath)
+		os.Exit(1)
 	}
 	defer outFile.Close()
 
@@ -56,7 +59,7 @@ func main() {
 	w := bitio.NewWriter(outFile)
 	if err = root.WriteHeader(w, freq); err != nil {
 		fmt.Fprintf(os.Stderr, "got error while writing header: %v\n", err)
-		return
+		os.Exit(1)
 	}
 
 	// Make encoding table
@@ -66,15 +69,16 @@ func main() {
 	// Start reading from begin
 	if _, err = inFile.Seek(0, 0); err != nil {
 		fmt.Fprintf(os.Stderr, "got error while seeking to begining of file: %v\n", err)
+		os.Exit(1)
 	}
 
 	// Encode file
-	log.Println("encoding file", inFilePath, "to file", outFilePath)
+	log.Println("encoding file", *inPath, "to file", *outPath)
 	v, err := r.ReadByte()
 	for err == nil {
 		if err = w.WriteBits(table[v].Code, table[v].Len); err != nil {
 			fmt.Fprintf(os.Stderr, "got error while writing data: %v\n", err)
-			return
+			os.Exit(1)
 		}
 		v, err = r.ReadByte()
 	}
@@ -82,10 +86,10 @@ func main() {
 	// Flush everything to file
 	if err := w.Flush(); err != nil {
 		fmt.Fprintf(os.Stderr, "got error while flushing: %v\n", err)
-		return
+		os.Exit(1)
 	}
 
-	log.Println("finished. see", outFilePath)
+	log.Println("finished. see", *outPath)
 
 	// Get size statistics
 	inStat, err := inFile.Stat()
