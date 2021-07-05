@@ -2,7 +2,7 @@ package tree
 
 import (
 	"errors"
-	"github.com/cravtos/huffman/internal/pkg/bitio"
+	"github.com/icza/bitio"
 	"github.com/cravtos/huffman/internal/pkg/code"
 )
 

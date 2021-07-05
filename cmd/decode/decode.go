@@ -3,10 +3,11 @@ package main
 import (
 	"flag"
 	"fmt"
-	"github.com/cravtos/huffman/internal/pkg/bitio"
-	"github.com/cravtos/huffman/internal/pkg/tree"
 	"log"
 	"os"
+
+	"github.com/cravtos/huffman/internal/pkg/tree"
+	"github.com/icza/bitio"
 )
 
 func main() {
@@ -71,7 +72,7 @@ func main() {
 	}
 
 	// Flush everything to file
-	if err := w.Flush(); err != nil {
+	if _, err := w.Align(); err != nil {
 		fmt.Fprintf(os.Stderr, "got error while flushing: %v\n", err)
 		os.Exit(1)
 	}
