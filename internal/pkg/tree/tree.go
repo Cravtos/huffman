@@ -2,8 +2,8 @@ package tree
 
 import (
 	"errors"
-	"github.com/icza/bitio"
 	"github.com/cravtos/huffman/internal/pkg/code"
+	"github.com/icza/bitio"
 )
 
 // Node represents node in encoding tree.
@@ -36,6 +36,7 @@ func NewEncodingTree(freq map[uint8]uint) *Node {
 	}
 
 	// Fictitious head point to tree root
+	head.next.prev = nil
 	return head.next
 }
 
@@ -75,8 +76,8 @@ func (head *Node) fillTable(table code.Table, c code.Code) {
 
 // WriteHeader writes header which can be used to construct encoding tree.
 //
-// Header: uint32(number of encodedsymbols in file)
-//		   uint8(number of symbols in tree)
+// Header: uint32 (number of encoded symbols in file)
+//		   uint8 (number of symbols in tree)
 //		   tree in raw bits
 //
 // To store the tree, we use a post-order traversal, writing each node visited.
