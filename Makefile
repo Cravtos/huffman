@@ -34,3 +34,6 @@ test:
 clean:
 	@echo "${RED}Deleting old binaries${NC}"
 	rm -rf ./bin
+	@echo "${RED}Deleting resulting test files${NC}"
+	rm -rf ${ENCODED}
+	rm -rf ${DECODED}
