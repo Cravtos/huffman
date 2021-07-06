@@ -1,5 +1,5 @@
 # Huffman
-**Huffman encoding/decoding tool**  
+**Huffman encoding**  
 
 Building: `make build`  
 Testing: `make test`  
