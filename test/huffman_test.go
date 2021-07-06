@@ -9,6 +9,23 @@ import (
 	"github.com/cravtos/huffman/internal/pkg/huffman"
 )
 
+// TestHuffman encodes and decodes every file in test/testdata, and compares results to originals.
+func TestHuffman(t *testing.T) {
+	testFiles, err := ioutil.ReadDir("./testdata")
+	if err != nil {
+		t.Errorf("got error while getting testdata: %v\n", err)
+		t.FailNow()
+	}
+
+	for _, file := range testFiles {
+		file := file
+		t.Run(file.Name(), func(t *testing.T) {
+			t.Parallel()
+			encodeAndDecode(t, "./testdata/"+file.Name())
+		})
+	}
+}
+
 func encodeAndDecode(t *testing.T, file string) {
 	// Create temp directory for resulting files
 	tmp := t.TempDir()
@@ -81,22 +98,5 @@ func encodeAndDecode(t *testing.T, file string) {
 
 	if equal == false {
 		t.Errorf("original and decoded files are not equal: %s and %s", origName, decName)
-	}
-}
-
-// TestHuffman encodes and decodes every file in test/testdata, and compares results to originals.
-func TestHuffman(t *testing.T) {
-	testFiles, err := ioutil.ReadDir("./testdata")
-	if err != nil {
-		t.Errorf("got error while getting testdata: %v\n", err)
-		t.FailNow()
-	}
-
-	for _, file := range testFiles {
-		file := file
-		t.Run(file.Name(), func(t *testing.T) {
-			t.Parallel()
-			encodeAndDecode(t, "./testdata/"+file.Name())
-		})
 	}
 }
