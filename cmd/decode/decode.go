@@ -3,11 +3,10 @@ package main
 import (
 	"flag"
 	"fmt"
-	"github.com/cravtos/huffman/internal/pkg/helpers"
+	"github.com/cravtos/huffman/internal/pkg/huffman"
 	"os"
 
-	"github.com/cravtos/huffman/internal/pkg/tree"
-	"github.com/icza/bitio"
+	"github.com/cravtos/huffman/internal/pkg/helpers"
 )
 
 func main() {
@@ -40,37 +39,9 @@ func main() {
 	}
 	defer outFile.Close()
 
-	// Read header and construct encoding tree
-	r := bitio.NewReader(inFile)
-	nEncoded, root, err := tree.DecodeHeader(r)
+	err = huffman.Decode(inFile, outFile)
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "can't decode header information: %v\n", err)
-		os.Exit(1)
-	}
-
-	// Decoding file
-	w := bitio.NewWriter(outFile)
-
-	// Decoding code by code
-	code, err := root.DecodeNext(r)
-	var i uint32
-	for i = 0; i != nEncoded && err == nil; i++ {
-		if err = w.WriteByte(code); err != nil {
-			fmt.Fprintf(os.Stderr, "got error while writing data: %v\n", err)
-			os.Exit(1)
-		}
-
-		code, err = root.DecodeNext(r)
-	}
-
-	// Check if number of decoded symbols equal number of symbols in header
-	if i != nEncoded {
-		fmt.Fprintf(os.Stderr, "number of decoded symbols not equal to number of symbols from header: %d != %d\n", i, nEncoded)
-	}
-
-	// Flush everything to file
-	if _, err := w.Align(); err != nil {
-		fmt.Fprintf(os.Stderr, "got error while flushing: %v\n", err)
+		fmt.Fprintf(os.Stderr, "got error while decoding: %v\n", err)
 		os.Exit(1)
 	}
 

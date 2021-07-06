@@ -1,14 +1,12 @@
 package main
 
 import (
-	"bufio"
 	"flag"
 	"fmt"
 	"os"
 
 	"github.com/cravtos/huffman/internal/pkg/helpers"
-	"github.com/cravtos/huffman/internal/pkg/tree"
-	"github.com/icza/bitio"
+	"github.com/cravtos/huffman/internal/pkg/huffman"
 )
 
 func main() {
@@ -41,45 +39,9 @@ func main() {
 	}
 	defer outFile.Close()
 
-	// Calculate byte frequencies
-	r := bufio.NewReader(inFile)
-	freq := helpers.CalcFreq(r)
-
-	// Construct encoding tree
-	root := tree.NewEncodingTree(freq)
-
-	// Write header information:
-	// 4 bytes - number of encoded symbols
-	// 1 byte - number of leaf in encoding tree
-	// else - encoding tree in post order traversal
-	w := bitio.NewWriter(outFile)
-	if err = root.WriteHeader(w, freq); err != nil {
-		fmt.Fprintf(os.Stderr, "got error while writing header: %v\n", err)
-		os.Exit(1)
-	}
-
-	// Make encoding table
-	table := root.NewEncodingTable()
-
-	// Start reading from begin
-	if _, err = inFile.Seek(0, 0); err != nil {
-		fmt.Fprintf(os.Stderr, "got error while seeking to begining of file: %v\n", err)
-		os.Exit(1)
-	}
-
-	// Encode file
-	v, err := r.ReadByte()
-	for err == nil {
-		if err = w.WriteBits(table[v].Code, table[v].Len); err != nil {
-			fmt.Fprintf(os.Stderr, "got error while writing data: %v\n", err)
-			os.Exit(1)
-		}
-		v, err = r.ReadByte()
-	}
-
-	// Flush everything to file
-	if _, err := w.Align(); err != nil {
-		fmt.Fprintf(os.Stderr, "got error while flushing: %v\n", err)
+	err = huffman.Encode(inFile, outFile)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "got error while encoding: %v\n", err)
 		os.Exit(1)
 	}
 
