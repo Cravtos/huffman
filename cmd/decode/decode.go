@@ -3,10 +3,10 @@ package main
 import (
 	"flag"
 	"fmt"
-	"github.com/cravtos/huffman/internal/pkg/huffman"
 	"os"
 
 	"github.com/cravtos/huffman/internal/pkg/helpers"
+	"github.com/cravtos/huffman/internal/pkg/huffman"
 )
 
 func main() {

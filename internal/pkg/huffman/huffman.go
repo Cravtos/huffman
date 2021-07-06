@@ -74,7 +74,7 @@ func Decode(in *os.File, out *os.File) (err error) {
 
 	// Check if number of decoded symbols equal number of symbols in header
 	if i != nEncoded {
-		errMsg := fmt.Sprintf( "number of decoded symbols not equal to number of symbols from header: %d != %d\n", i, nEncoded)
+		errMsg := fmt.Sprintf("number of decoded symbols not equal to number of symbols from header: %d != %d\n", i, nEncoded)
 		return errors.New(errMsg)
 	}
 
