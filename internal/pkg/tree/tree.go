@@ -37,7 +37,9 @@ func NewEncodingTree(freq map[uint8]uint) *Node {
 	}
 
 	// Fictitious head point to tree root
-	head.next.prev = nil
+	if head.next != nil {
+		head.next.prev = nil
+	}
 	return head.next
 }
 
@@ -53,6 +55,10 @@ func (head *Node) NewEncodingTable() code.Table {
 
 // fillTable recursively fills table with encoding values.
 func (head *Node) fillTable(table code.Table, c code.Code) {
+	if head == nil {
+		return
+	}
+
 	if head.left == nil && head.right == nil {
 		table[head.value] = c
 		return
@@ -113,6 +119,10 @@ func (head *Node) WriteHeader(w *bitio.Writer, freq map[uint8]uint) (err error) 
 }
 
 func (head *Node) writeHeader(w *bitio.Writer) (err error) {
+	if head == nil {
+		return
+	}
+
 	if head.left == nil && head.right == nil {
 		if err = w.WriteBits(1, 1); err != nil {
 			return err
@@ -232,6 +242,10 @@ func (head *Node) pushBack(node *Node) {
 // popFirst removes first node after head and returns it.
 // If head is the only node, nil is returned.
 func (head *Node) popFirst() *Node {
+	if head == nil {
+		return nil
+	}
+
 	node := head.next
 	if node == nil {
 		return nil
@@ -251,6 +265,10 @@ func (head *Node) popFirst() *Node {
 // popLast removes first node after head and returns it.
 // If head is the only node, nil is returned.
 func (head *Node) popLast() *Node {
+	if head == nil {
+		return nil
+	}
+
 	node := head.next
 	if node == nil {
 		return nil
@@ -286,6 +304,10 @@ func join(l, r *Node) *Node {
 // DecodeNext reads bits from Reader until reaching a leaf in encoding tree.
 // Returns code corresponding to leaf.
 func (head *Node) DecodeNext(r *bitio.Reader) (b byte, err error) {
+	if head == nil {
+		return
+	}
+
 	var u uint64
 	node := head
 
