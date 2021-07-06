@@ -3,6 +3,7 @@ package main
 import (
 	"flag"
 	"fmt"
+	"github.com/cravtos/huffman/internal/pkg/helpers"
 	"log"
 	"os"
 
@@ -13,6 +14,7 @@ import (
 func main() {
 	inPath := flag.String("input", "", "File to decode.")
 	outPath := flag.String("output", "", "Output file.")
+	printRatio := flag.Bool("pr", false, "Print compression ratio.")
 
 	flag.Parse()
 
@@ -79,21 +81,10 @@ func main() {
 
 	log.Println("finished. see", *outPath)
 
-	// Get size statistics
-	inStat, err := inFile.Stat()
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "couldn't obtain stat for input file: %v\n", err)
-		return
+	if *printRatio == true {
+		if err := helpers.PrintRatio(inFile, outFile); err != nil {
+			fmt.Fprintf(os.Stderr, "got error while getting compression ratio: %v\n", err)
+			os.Exit(2)
+		}
 	}
-
-	outStat, err := outFile.Stat()
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "couldn't obtain stat for output file: %v\n", err)
-		return
-	}
-
-	inSize := inStat.Size()
-	outSize := outStat.Size()
-	ratio := float32(outStat.Size()) / float32(inStat.Size())
-	log.Printf("input size: %v, output size: %v, ratio: %v\n", inSize, outSize, ratio)
 }
