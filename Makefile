@@ -15,7 +15,7 @@ build:
 	@echo "${GREEN}See binaries in ./bin${NC}"
 
 test:
-	@echo "${YELLOW}Testing on compress_me${NC}"
+	@echo "${YELLOW}Testing${NC}"
 	go test ./test -v
 
 clean:
