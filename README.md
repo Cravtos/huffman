@@ -1,6 +1,9 @@
-# huffman
-Huffman encoding/decoding tool
-### Written in educational purposes, not to be used seriously!
+# Huffman
+**Huffman encoding/decoding tool**  
 
-### Building: `make all`
-### Binaries will be placed to `./bin/`
+Building: `make build`  
+Testing: `make test`  
+Binaries will be placed to `./bin/`
+
+**Written in educational purposes, not to be used seriously!**
+
