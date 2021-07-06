@@ -4,7 +4,6 @@ import (
 	"bufio"
 	"flag"
 	"fmt"
-	"log"
 	"os"
 
 	"github.com/cravtos/huffman/internal/pkg/helpers"
@@ -27,7 +26,6 @@ func main() {
 	}
 
 	// Open file to read data
-	log.Println("opening file", *inPath)
 	inFile, err := os.Open(*inPath)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "can't open file %s\n", *inPath)
@@ -36,7 +34,6 @@ func main() {
 	defer inFile.Close()
 
 	// Open file to write compressed data
-	log.Println("creating file", *outPath)
 	outFile, err := os.Create(*outPath)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "can't create file %s\n", *outPath)
@@ -45,19 +42,16 @@ func main() {
 	defer outFile.Close()
 
 	// Calculate byte frequencies
-	log.Println("calculating frequencies")
 	r := bufio.NewReader(inFile)
 	freq := helpers.CalcFreq(r)
 
 	// Construct encoding tree
-	log.Println("constructing encoding tree")
 	root := tree.NewEncodingTree(freq)
 
 	// Write header information:
 	// 4 bytes - number of encoded symbols
 	// 1 byte - number of leaf in encoding tree
 	// else - encoding tree in post order traversal
-	log.Println("writing header")
 	w := bitio.NewWriter(outFile)
 	if err = root.WriteHeader(w, freq); err != nil {
 		fmt.Fprintf(os.Stderr, "got error while writing header: %v\n", err)
@@ -65,7 +59,6 @@ func main() {
 	}
 
 	// Make encoding table
-	log.Println("making encoding table")
 	table := root.NewEncodingTable()
 
 	// Start reading from begin
@@ -75,7 +68,6 @@ func main() {
 	}
 
 	// Encode file
-	log.Println("encoding file", *inPath, "to file", *outPath)
 	v, err := r.ReadByte()
 	for err == nil {
 		if err = w.WriteBits(table[v].Code, table[v].Len); err != nil {

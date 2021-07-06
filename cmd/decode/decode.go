@@ -4,7 +4,6 @@ import (
 	"flag"
 	"fmt"
 	"github.com/cravtos/huffman/internal/pkg/helpers"
-	"log"
 	"os"
 
 	"github.com/cravtos/huffman/internal/pkg/tree"
@@ -26,7 +25,6 @@ func main() {
 	}
 
 	// Open file to read data
-	log.Println("opening file", *inPath)
 	inFile, err := os.Open(*inPath)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "can't open file %s\n", *inPath)
@@ -35,7 +33,6 @@ func main() {
 	defer inFile.Close()
 
 	// Open file to write decompressed data
-	log.Println("creating file", *outPath)
 	outFile, err := os.Create(*outPath)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "can't create file %s\n", *outPath)
@@ -44,7 +41,6 @@ func main() {
 	defer outFile.Close()
 
 	// Read header and construct encoding tree
-	log.Println("reading header")
 	r := bitio.NewReader(inFile)
 	nEncoded, root, err := tree.DecodeHeader(r)
 	if err != nil {
@@ -53,7 +49,6 @@ func main() {
 	}
 
 	// Decoding file
-	log.Println("decoding file")
 	w := bitio.NewWriter(outFile)
 
 	// Decoding code by code
@@ -78,8 +73,6 @@ func main() {
 		fmt.Fprintf(os.Stderr, "got error while flushing: %v\n", err)
 		os.Exit(1)
 	}
-
-	log.Println("finished. see", *outPath)
 
 	if *printRatio == true {
 		if err := helpers.PrintRatio(inFile, outFile); err != nil {
