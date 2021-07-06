@@ -39,10 +39,12 @@ func Encode(in *os.File, out *os.File) (err error) {
 	// Encode file
 	v, err := r.ReadByte()
 	for err == nil {
-		if err = w.WriteBits(table[v].Code, table[v].Len); err != nil {
-			return err
-		}
+		w.TryWriteBitsUnsafe(table[v].Code, table[v].Len)
 		v, err = r.ReadByte()
+	}
+
+	if w.TryError != nil {
+		return w.TryError
 	}
 
 	// Close writer and flush everything to file
@@ -64,12 +66,12 @@ func Decode(in *os.File, out *os.File) (err error) {
 	var i uint32
 	code, err := root.DecodeNext(r)
 	for i = 0; i != nEncoded && err == nil; i++ {
-		err = w.WriteByte(code)
-		if err != nil {
-			return err
-		}
-
+		w.TryWriteByte(code)
 		code, err = root.DecodeNext(r)
+	}
+
+	if w.TryError != nil {
+		return w.TryError
 	}
 
 	// Check if number of decoded symbols equal number of symbols in header

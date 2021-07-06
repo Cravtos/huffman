@@ -102,20 +102,17 @@ func (head *Node) WriteHeader(w *bitio.Writer, freq map[uint8]uint) (err error) 
 	}
 
 	// Write total number of encoded symbols
-	if err = w.WriteBits(uint64(nEncoded), 32); err != nil {
-		return err
-	}
+	w.TryWriteBitsUnsafe(uint64(nEncoded), 32)
 
 	// Write total number of symbols in graph
-	if err = w.WriteBits(uint64(len(freq)), 8); err != nil {
-		return err
-	}
+	w.TryWriteBitsUnsafe(uint64(len(freq)), 8)
 
 	// Write encoding tree information
 	if err = head.writeHeader(w); err != nil {
 		return err
 	}
-	return w.WriteBits(0, 1)
+	w.TryWriteBitsUnsafe(0, 1)
+	return w.TryError
 }
 
 func (head *Node) writeHeader(w *bitio.Writer) (err error) {
@@ -124,10 +121,9 @@ func (head *Node) writeHeader(w *bitio.Writer) (err error) {
 	}
 
 	if head.left == nil && head.right == nil {
-		if err = w.WriteBits(1, 1); err != nil {
-			return err
-		}
-		return w.WriteByte(head.value)
+		w.TryWriteBitsUnsafe(1, 1)
+		w.TryWriteByte(head.value)
+		return w.TryError
 	}
 
 	if head.left != nil {
@@ -142,7 +138,8 @@ func (head *Node) writeHeader(w *bitio.Writer) (err error) {
 		}
 	}
 
-	return w.WriteBits(0, 1)
+	w.TryWriteBitsUnsafe(0, 1)
+	return w.TryError
 }
 
 // DecodeHeader reads from bitio.Reader total number of encoded symbols,
