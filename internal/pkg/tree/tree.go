@@ -214,6 +214,10 @@ func decodeTree(r *bitio.Reader, nTree byte) (root *Node, err error) {
 
 // insert puts a node to list so that the list remains sorted.
 func (head *Node) insert(node *Node) {
+	if head == nil {
+		return
+	}
+
 	after := head
 	for after.next != nil && node.weight >= after.next.weight {
 		after = after.next
@@ -229,6 +233,10 @@ func (head *Node) insert(node *Node) {
 
 // pushBack puts a node to the end of a list.
 func (head *Node) pushBack(node *Node) {
+	if head == nil {
+		return
+	}
+
 	after := head
 	for after.next != nil {
 		after = after.next
